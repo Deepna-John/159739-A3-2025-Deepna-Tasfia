@@ -1,21 +1,32 @@
 package edu.masseyuniversity.cinema;
 
-import edu.masseyuniversity.cinema.gui.MainFrame;
-import edu.masseyuniversity.cinema.repository.MovieRepository;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
+/**
+ * Main entry point for Cinema Ticket Management System
+ * 
+ * @author Deepna & Tasfia
+ * @version 1.0
+ */
 public class App {
     public static void main(String[] args) {
-        // Create a movie repository (loads data from file or default list)
-        MovieRepository repo = new MovieRepository();
-
+        // Set look and feel
         try {
-            // Try loading movie data from file (if it exists)
-            repo.loadFromFile("movies.txt");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            System.out.println("No movie file found. Starting with an empty list.");
+            e.printStackTrace();
         }
 
-        // Launch the main GUI window
-        javax.swing.SwingUtilities.invokeLater(() -> new MainFrame(repo));
+        // Launch GUI on Event Dispatch Thread
+        SwingUtilities.invokeLater(() -> {
+            try {
+                CinemaSystem system = new CinemaSystem();
+                system.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Failed to start Cinema System: " + e.getMessage());
+            }
+        });
     }
 }
