@@ -1,4 +1,4 @@
-javapackage edu.masseyuniversity.cinema;
+package edu.masseyuniversity.cinema;
 
 import edu.masseyuniversity.cinema.model.*;
 import org.junit.jupiter.api.Test;
