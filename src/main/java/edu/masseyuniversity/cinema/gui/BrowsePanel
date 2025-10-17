@@ -1,4 +1,4 @@
-javapackage edu.masseyuniversity.cinema.view;
+package edu.masseyuniversity.cinema.view;
 
 import edu.masseyuniversity.cinema.controller.AuthenticationController;
 import edu.masseyuniversity.cinema.controller.CinemaController;
