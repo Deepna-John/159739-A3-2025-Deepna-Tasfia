@@ -56,6 +56,7 @@ mvn exec:java -Dexec.mainClass="edu.masseyuniversity.cinema.App"
 Role	Username	Password
 Ticket Seller	s1 / s2 / s3	identical to username
 Manager	m1 / m2	identical to username
+
 7. Key Features
 General Features
 
@@ -82,18 +83,44 @@ Load movie data for modification
 Full CRUD operations supported
 
 8. Project Structure
-cinemaapp/
-├── src/
-│   ├── main/java/edu/masseyuniversity/cinema/
-│   │   ├── model/ (Movie and Staff hierarchies)
-│   │   ├── controller/ (CinemaController, AuthenticationController)
-│   │   ├── util/ (MovieFactory, MovieFileHandler)
-│   │   ├── CinemaSystem.java (Main GUI)
-│   │   └── App.java (Entry point)
-│   └── test/java/... (JUnit tests)
-├── movies.txt
-├── pom.xml
-└── README.md
+
+159739-A3-2025-Deepna-Tasfia/
+├── .github/
+│   └── workflows/
+│       └── maven.yml                  # CI/CD pipeline configuration
+├── cinemaapp/
+│   ├── src/
+│   │   ├── main/java/edu/masseyuniversity/cinema/
+│   │   │   ├── model/                 # Movie and Staff hierarchies
+│   │   │   │   ├── staff/             # Manager, TicketSeller
+│   │   │   │   ├── Movie.java         # Abstract base class
+│   │   │   │   ├── ActionMovie.java
+│   │   │   │   ├── ComedyMovie.java
+│   │   │   │   ├── RomanceMovie.java
+│   │   │   │   └── ScienceFictionMovie.java
+│   │   │   ├── controller/            # Business logic
+│   │   │   │   ├── CinemaController.java
+│   │   │   │   └── AuthenticationController.java
+│   │   │   ├── util/                  # Utilities
+│   │   │   │   ├── MovieFactory.java
+│   │   │   │   └── MovieFileHandler.java
+│   │   │   ├── CinemaSystem.java      # Main GUI
+│   │   │   └── App.java               # Application entry point
+│   │   └── test/java/edu/masseyuniversity/cinema/
+│   │       ├── MovieTest.java
+│   │       ├── AuthenticationTest.java
+│   │       ├── CinemaControllerTest.java
+│   │       └── SimpleTest.java
+│   ├── reports/
+│   │   └── metrics/                   # Code metrics reports
+│   │       ├── dependencies.html
+│   │       ├── summary.html
+│   │       └── project-info.html
+│   ├── movies.txt                     # Input data file
+│   ├── pom.xml                        # Maven configuration
+│   └── README.md                      # This file
+└── INSTRUCTION_MANUAL.pdf             # User documentation
+```
 
 9. Software Design and Methodology
 9.1 Object-Oriented Programming Concepts
@@ -142,7 +169,46 @@ CinemaControllerTest.java: Verifies CRUD operations
 
 All tests passed successfully under the Maven build environment.
 
-12. File Input Format
+12. GitHub Repository and CI/CD
+
+### GitHub Actions Workflow
+ **Configuration:** `.github/workflows/maven.yml`
+ **Triggers:** Push and pull requests to main branch
+ **Actions:**
+   Checkout repository
+   Set up JDK 11
+   Build with Maven (`mvn clean compile`)
+   Run tests (`mvn test`)
+
+**Build Status:** [![Java CI with Maven](https://github.com/Deepna-John/159739-A3-2025-Deepna-Tasfia/actions/workflows/maven.yml/badge.svg)](https://github.com/Deepna-John/159739-A3-2025-Deepna-Tasfia/actions)
+
+### Issue Tracking
+Project development tracked through GitHub Issues:
+ Implementation of OOP hierarchies
+ GUI development
+ File I/O functionality
+ Authentication system
+ Unit testing
+
+---
+
+13. Code Metrics
+
+**Location:** `reports/metrics/`
+
+**Generated Reports:**
+ `dependencies.html` - Project dependencies analysis
+ `summary.html` - Project summary and build information
+ `project-info.html` - Overall project documentation
+
+**Metrics Include:**
+ Lines of Code (LOC) per class
+ Number of Methods (NOM)
+ Dependency analysis
+ Test coverage information
+
+
+14. File Input Format
 
 File: movies.txt
 Each line represents a movie record in the following format:
@@ -155,7 +221,7 @@ Example:
 Action,A001,Fast & Furious 9,Justin Lin,143,15.5,18:30,High,50
 Romance,R001,Titanic,James Cameron,195,18.0,20:00,R13,50
 
-13. Limitations
+15. Limitations
 
 Data persistence is limited to text file storage.
 
@@ -165,7 +231,7 @@ No database integration.
 
 Must export manually to save session data permanently.
 
-14. Future Work
+16. Future Work
 
 Potential extensions include:
 
@@ -179,7 +245,7 @@ Email or notification features
 
 Multi-user concurrency support
 
-15. Compliance with Assignment Requirements
+17. Compliance with Assignment Requirements
 
 Demonstration of key OOP principles
 
@@ -197,7 +263,7 @@ GitHub version control with documented commits
 
 Complete role-based functionality and export operations
 
-16. Contact Information
+18. Contact Information
 
 Deepna John – deepnajohn4@gmail.com
 
