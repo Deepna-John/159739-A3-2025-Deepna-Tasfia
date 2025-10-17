@@ -1,0 +1,69 @@
+javapackage edu.masseyuniversity.cinema.view;
+
+import edu.masseyuniversity.cinema.model.*;
+import javax.swing.*;
+import java.awt.*;
+
+public class MovieDetailsDialog extends JDialog {
+    private Movie movie;
+
+    public MovieDetailsDialog(Frame parent, Movie movie) {
+        super(parent, "Movie Details", true);
+        this.movie = movie;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setSize(400, 400);
+        setLocationRelativeTo(getParent());
+        setResizable(false);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JPanel detailsPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+
+        addDetailRow(detailsPanel, "Movie ID:", movie.getMovieId());
+        addDetailRow(detailsPanel, "Title:", movie.getTitle());
+        addDetailRow(detailsPanel, "Category:", movie.getCategory());
+        addDetailRow(detailsPanel, "Director:", movie.getDirector());
+        addDetailRow(detailsPanel, "Duration:", movie.getDuration() + " minutes");
+        addDetailRow(detailsPanel, "Price:", "$" + movie.getTicketPrice());
+        addDetailRow(detailsPanel, "Show Time:", movie.getShowTime());
+        addDetailRow(detailsPanel, "Available Tickets:", String.valueOf(movie.getAvailableTickets()));
+
+        String extraLabel = getExtraAttributeLabel();
+        addDetailRow(detailsPanel, extraLabel, movie.getExtraAttribute());
+
+        JPanel buttonPanel = new JPanel();
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dispose());
+        buttonPanel.add(closeButton);
+
+        mainPanel.add(detailsPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+    }
+
+    private void addDetailRow(JPanel panel, String label, String value) {
+        JLabel labelComponent = new JLabel(label);
+        labelComponent.setFont(new Font("Arial", Font.BOLD, 12));
+        JLabel valueComponent = new JLabel(value);
+        
+        panel.add(labelComponent);
+        panel.add(valueComponent);
+    }
+
+    private String getExtraAttributeLabel() {
+        if (movie instanceof ActionMovie) {
+            return "Stunt Level:";
+        } else if (movie instanceof RomanceMovie) {
+            return "Age Restriction:";
+        } else if (movie instanceof ScienceFictionMovie) {
+            return "Format:";
+        } else {
+            return "Extra:";
+        }
+    }
+}

@@ -1,0 +1,84 @@
+javapackage edu.masseyuniversity.cinema.view;
+
+import edu.masseyuniversity.cinema.controller.AuthenticationController;
+import edu.masseyuniversity.cinema.controller.CinemaController;
+import javax.swing.*;
+import java.awt.*;
+
+public class LoginFrame extends JFrame {
+    private AuthenticationController authController;
+    private CinemaController cinemaController;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+
+    public LoginFrame(AuthenticationController authController, CinemaController cinemaController) {
+        this.authController = authController;
+        this.cinemaController = cinemaController;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("Cinema Ticket Management System - Login");
+        setSize(400, 250);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setResizable(false);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        JPanel titlePanel = new JPanel();
+        JLabel titleLabel = new JLabel("Cinema Management System");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titlePanel.add(titleLabel);
+
+        JPanel formPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
+
+        formPanel.add(new JLabel("Username:"));
+        formPanel.add(usernameField);
+        formPanel.add(new JLabel("Password:"));
+        formPanel.add(passwordField);
+
+        JPanel buttonPanel = new JPanel();
+        JButton loginButton = new JButton("Login");
+        loginButton.setPreferredSize(new Dimension(100, 30));
+        loginButton.addActionListener(e -> handleLogin());
+        buttonPanel.add(loginButton);
+
+        mainPanel.add(titlePanel, BorderLayout.NORTH);
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+        passwordField.addActionListener(e -> handleLogin());
+    }
+
+    private void handleLogin() {
+        String username = usernameField.getText().trim();
+        String password = new String(passwordField.getPassword());
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter both username and password",
+                    "Login Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (authController.login(username, password)) {
+            MainFrame mainFrame = new MainFrame(authController, cinemaController);
+            mainFrame.setVisible(true);
+            this.dispose();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Invalid username or password",
+                    "Login Failed",
+                    JOptionPane.ERROR_MESSAGE);
+            passwordField.setText("");
+        }
+    }
+}

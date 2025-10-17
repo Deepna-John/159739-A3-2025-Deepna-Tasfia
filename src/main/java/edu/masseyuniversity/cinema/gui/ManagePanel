@@ -1,0 +1,253 @@
+javapackage edu.masseyuniversity.cinema.view;
+
+import edu.masseyuniversity.cinema.controller.CinemaController;
+import edu.masseyuniversity.cinema.model.*;
+import javax.swing.*;
+import java.awt.*;
+
+public class ManagePanel extends JPanel {
+    private CinemaController cinemaController;
+    private JTextField movieIdField, titleField, directorField, durationField;
+    private JTextField priceField, showTimeField, extraAttrField, availableTicketsField;
+    private JComboBox<String> categoryComboBox;
+
+    public ManagePanel(CinemaController cinemaController) {
+        this.cinemaController = cinemaController;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Movie Information"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        categoryComboBox = new JComboBox<>(new String[]{"Action", "Comedy", "Romance", "ScienceFiction"});
+        movieIdField = new JTextField(20);
+        titleField = new JTextField(20);
+        directorField = new JTextField(20);
+        durationField = new JTextField(20);
+        priceField = new JTextField(20);
+        showTimeField = new JTextField(20);
+        extraAttrField = new JTextField(20);
+        availableTicketsField = new JTextField(20);
+
+        addFormRow(formPanel, gbc, 0, "Category:", categoryComboBox);
+        addFormRow(formPanel, gbc, 1, "Movie ID:", movieIdField);
+        addFormRow(formPanel, gbc, 2, "Title:", titleField);
+        addFormRow(formPanel, gbc, 3, "Director:", directorField);
+        addFormRow(formPanel, gbc, 4, "Duration (min):", durationField);
+        addFormRow(formPanel, gbc, 5, "Price ($):", priceField);
+        addFormRow(formPanel, gbc, 6, "Show Time:", showTimeField);
+        addFormRow(formPanel, gbc, 7, "Extra Attribute:", extraAttrField);
+        addFormRow(formPanel, gbc, 8, "Available Tickets:", availableTicketsField);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(e -> loadMovie());
+        
+        JButton addButton = new JButton("Add");
+        addButton.addActionListener(e -> addMovie());
+        
+        JButton updateButton = new JButton("Update");
+        updateButton.addActionListener(e -> updateMovie());
+        
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(e -> deleteMovie());
+        
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> clearFields());
+
+        buttonPanel.add(loadButton);
+        buttonPanel.add(addButton);
+        buttonPanel.add(updateButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(clearButton);
+
+        JPanel infoPanel = new JPanel();
+        JLabel infoLabel = new JLabel("<html><i>Enter Movie ID and click Load to edit existing movie</i></html>");
+        infoLabel.setForeground(Color.GRAY);
+        infoPanel.add(infoLabel);
+
+        add(infoPanel, BorderLayout.NORTH);
+        add(formPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void addFormRow(JPanel panel, GridBagConstraints gbc, int row, String label, JComponent component) {
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1;
+        panel.add(component, gbc);
+    }
+
+    private void loadMovie() {
+        String movieId = movieIdField.getText().trim();
+        if (movieId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter a Movie ID to load",
+                    "Input Required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        Movie movie = cinemaController.findMovieById(movieId);
+        if (movie == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Movie not found with ID: " + movieId,
+                    "Not Found",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        categoryComboBox.setSelectedItem(movie.getCategory());
+        titleField.setText(movie.getTitle());
+        directorField.setText(movie.getDirector());
+        durationField.setText(String.valueOf(movie.getDuration()));
+        priceField.setText(String.valueOf(movie.getTicketPrice()));
+        showTimeField.setText(movie.getShowTime());
+        extraAttrField.setText(movie.getExtraAttribute());
+        availableTicketsField.setText(String.valueOf(movie.getAvailableTickets()));
+        
+        movieIdField.setEditable(false);
+    }
+
+    private void addMovie() {
+        try {
+            Movie movie = createMovieFromFields();
+            cinemaController.addMovie(movie);
+            
+            JOptionPane.showMessageDialog(this,
+                    "Movie added successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            
+            clearFields();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Add Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateMovie() {
+        if (movieIdField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please load a movie first using the Load button",
+                    "No Movie Loaded",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            Movie movie = createMovieFromFields();
+            cinemaController.updateMovie(movie);
+            
+            JOptionPane.showMessageDialog(this,
+                    "Movie updated successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            
+            clearFields();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Update Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void deleteMovie() {
+        String movieId = movieIdField.getText().trim();
+        if (movieId.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter or load a Movie ID to delete",
+                    "Input Required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete movie: " + movieId + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                cinemaController.deleteMovie(movieId);
+                JOptionPane.showMessageDialog(this,
+                        "Movie deleted successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                
+                clearFields();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(),
+                        "Delete Failed",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void clearFields() {
+        movieIdField.setText("");
+        movieIdField.setEditable(true);
+        titleField.setText("");
+        directorField.setText("");
+        durationField.setText("");
+        priceField.setText("");
+        showTimeField.setText("");
+        extraAttrField.setText("");
+        availableTicketsField.setText("");
+        categoryComboBox.setSelectedIndex(0);
+    }
+
+    private Movie createMovieFromFields() throws IllegalArgumentException {
+        String movieId = movieIdField.getText().trim();
+        String title = titleField.getText().trim();
+        String director = directorField.getText().trim();
+        String durationStr = durationField.getText().trim();
+        String priceStr = priceField.getText().trim();
+        String showTime = showTimeField.getText().trim();
+        String extraAttr = extraAttrField.getText().trim();
+        String ticketsStr = availableTicketsField.getText().trim();
+        String category = (String) categoryComboBox.getSelectedItem();
+
+        if (movieId.isEmpty() || title.isEmpty() || director.isEmpty() || 
+            durationStr.isEmpty() || priceStr.isEmpty() || showTime.isEmpty() || ticketsStr.isEmpty()) {
+            throw new IllegalArgumentException("All fields must be filled");
+        }
+
+        int duration = Integer.parseInt(durationStr);
+        double price = Double.parseDouble(priceStr);
+        int tickets = Integer.parseInt(ticketsStr);
+
+        if (duration <= 0 || price <= 0 || tickets < 0) {
+            throw new IllegalArgumentException("Duration and Price must be positive, Tickets cannot be negative");
+        }
+
+        switch (category) {
+            case "Action":
+                if (extraAttr.isEmpty()) extraAttr = "Medium";
+                return new ActionMovie(movieId, title, director, duration, price, showTime, extraAttr, tickets);
+            case "Comedy":
+                return new ComedyMovie(movieId, title, director, duration, price, showTime, tickets);
+            case "Romance":
+                if (extraAttr.isEmpty()) extraAttr = "PG";
+                return new RomanceMovie(movieId, title, director, duration, price, showTime, extraAttr, tickets);
+            case "ScienceFiction":
+                if (extraAttr.isEmpty()) extraAttr = "3D";
+                return new ScienceFictionMovie(movieId, title, director, duration, price, showTime, extraAttr, tickets);
+            default:
+                throw new IllegalArgumentException("Invalid category");
+        }
+    }
+}

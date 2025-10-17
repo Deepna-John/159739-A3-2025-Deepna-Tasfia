@@ -1,0 +1,97 @@
+javapackage edu.masseyuniversity.cinema.view;
+
+import edu.masseyuniversity.cinema.controller.AuthenticationController;
+import edu.masseyuniversity.cinema.controller.CinemaController;
+import javax.swing.*;
+import java.awt.*;
+
+public class MainFrame extends JFrame {
+    private AuthenticationController authController;
+    private CinemaController cinemaController;
+
+    public MainFrame(AuthenticationController authController, CinemaController cinemaController) {
+        this.authController = authController;
+        this.cinemaController = cinemaController;
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("Cinema Management System - " + authController.getCurrentUser().getRole());
+        setSize(900, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel userLabel = new JLabel("Logged in as: " + authController.getCurrentUser().getUsername() 
+                                     + " (" + authController.getCurrentUser().getRole() + ")");
+        userLabel.setFont(new Font("Arial", Font.BOLD, 12));
+
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(e -> handleLogout());
+
+        topPanel.add(userLabel, BorderLayout.WEST);
+        topPanel.add(logoutButton, BorderLayout.EAST);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        BrowsePanel browsePanel = new BrowsePanel(cinemaController, authController);
+        tabbedPane.addTab("Browse", browsePanel);
+
+        if (authController.getCurrentUser().canManageMovies()) {
+            ManagePanel managePanel = new ManagePanel(cinemaController);
+            tabbedPane.addTab("Check/Update", managePanel);
+        }
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        JButton exportButton = new JButton("Export");
+        exportButton.addActionListener(e -> handleExport());
+        bottomPanel.add(exportButton);
+
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+    }
+
+    private void handleLogout() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to logout?",
+                "Confirm Logout",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            authController.logout();
+            LoginFrame loginFrame = new LoginFrame(authController, cinemaController);
+            loginFrame.setVisible(true);
+            this.dispose();
+        }
+    }
+
+    private void handleExport() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Export Movies");
+        fileChooser.setSelectedFile(new java.io.File("movies_export.txt"));
+
+        int result = fileChooser.showSaveDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                String filename = fileChooser.getSelectedFile().getAbsolutePath();
+                cinemaController.exportMovies(filename);
+                JOptionPane.showMessageDialog(this,
+                        "Movies exported successfully to:\n" + filename,
+                        "Export Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Error exporting movies: " + ex.getMessage(),
+                        "Export Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+}

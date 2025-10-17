@@ -1,0 +1,152 @@
+javapackage edu.masseyuniversity.cinema.view;
+
+import edu.masseyuniversity.cinema.controller.AuthenticationController;
+import edu.masseyuniversity.cinema.controller.CinemaController;
+import edu.masseyuniversity.cinema.model.Movie;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class BrowsePanel extends JPanel {
+    private CinemaController cinemaController;
+    private AuthenticationController authController;
+    private JComboBox<String> categoryComboBox;
+    private JTextField titleSearchField;
+    private JTable movieTable;
+    private DefaultTableModel tableModel;
+
+    public BrowsePanel(CinemaController cinemaController, AuthenticationController authController) {
+        this.cinemaController = cinemaController;
+        this.authController = authController;
+        initializeUI();
+        loadAllMovies();
+    }
+
+    private void initializeUI() {
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Search Movies"));
+
+        categoryComboBox = new JComboBox<>(new String[]{"All", "Action", "Comedy", "Romance", "ScienceFiction"});
+        titleSearchField = new JTextField(20);
+        JButton searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> performSearch());
+
+        searchPanel.add(new JLabel("Category:"));
+        searchPanel.add(categoryComboBox);
+        searchPanel.add(new JLabel("Title:"));
+        searchPanel.add(titleSearchField);
+        searchPanel.add(searchButton);
+
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBorder(BorderFactory.createTitledBorder("Movie List"));
+
+        String[] columns = {"Movie ID", "Title", "Director", "Duration", "Price", "Show Time", "Available Tickets"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        movieTable = new JTable(tableModel);
+        movieTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        JScrollPane scrollPane = new JScrollPane(movieTable);
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        JButton viewDetailsButton = new JButton("View Details");
+        viewDetailsButton.addActionListener(e -> viewMovieDetails());
+        
+        JButton bookButton = new JButton("Book");
+        bookButton.addActionListener(e -> bookTicket());
+
+        buttonPanel.add(viewDetailsButton);
+        buttonPanel.add(bookButton);
+
+        add(searchPanel, BorderLayout.NORTH);
+        add(tablePanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        titleSearchField.addActionListener(e -> performSearch());
+    }
+
+    private void loadAllMovies() {
+        List<Movie> movies = cinemaController.getAllMovies();
+        updateTable(movies);
+    }
+
+    private void performSearch() {
+        String category = (String) categoryComboBox.getSelectedItem();
+        String title = titleSearchField.getText();
+        
+        List<Movie> movies = cinemaController.searchByCategoryAndTitle(category, title);
+        updateTable(movies);
+    }
+
+    private void updateTable(List<Movie> movies) {
+        tableModel.setRowCount(0);
+        for (Movie movie : movies) {
+            Object[] row = {
+                movie.getMovieId(),
+                movie.getTitle(),
+                movie.getDirector(),
+                movie.getDuration() + " min",
+                "$" + movie.getTicketPrice(),
+                movie.getShowTime(),
+                movie.getAvailableTickets()
+            };
+            tableModel.addRow(row);
+        }
+    }
+
+    private void viewMovieDetails() {
+        int selectedRow = movieTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a movie to view details",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String movieId = (String) tableModel.getValueAt(selectedRow, 0);
+        Movie movie = cinemaController.findMovieById(movieId);
+        
+        if (movie != null) {
+            MovieDetailsDialog dialog = new MovieDetailsDialog((Frame) SwingUtilities.getWindowAncestor(this), movie);
+            dialog.setVisible(true);
+        }
+    }
+
+    private void bookTicket() {
+        int selectedRow = movieTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a movie to book",
+                    "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String movieId = (String) tableModel.getValueAt(selectedRow, 0);
+        
+        try {
+            cinemaController.sellTicket(movieId);
+            JOptionPane.showMessageDialog(this,
+                    "Ticket booked successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            performSearch();
+        } catch (IllegalStateException ex) {
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Booking Failed",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
